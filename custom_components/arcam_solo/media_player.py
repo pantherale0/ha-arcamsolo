@@ -63,14 +63,17 @@ class ArcamSoloDevice(MediaPlayerEntity):
         def callback_update_ha() -> None:
             self.schedule_update_ha_state()
         self._added_to_hass = True
-        # TODO set zone callback.
+        self._arcam.set_zone_callback(
+            self._zone,
+            callback_update_ha
+        )
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return device info."""
         name = self._attr_name
         return {
-            "identifiers": {(DOMAIN), f"{self._device_unique_id}-{self._zone}"},
+            "identifiers": {(DOMAIN), f"{self._config_entry.entry_id}"},
             "manufacturer": "Arcam",
             "sw_version": self._arcam.software_version,
             "name": name,
@@ -152,8 +155,7 @@ class ArcamSoloDevice(MediaPlayerEntity):
 
     async def async_select_source(self, source: str) -> None:
         """Select input source."""
-        # TODO
-        return None
+        return await self._arcam.set_source(source)
 
     async def async_volume_up(self) -> None:
         """Volume up media player."""

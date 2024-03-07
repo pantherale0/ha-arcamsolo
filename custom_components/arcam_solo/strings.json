@@ -4,6 +4,7 @@
             "user": {
                 "title": "Configure connection to RS232 bridge.",
                 "data": {
+                    "name": "Device name",
                     "host": "IP or hostname of device",
                     "port": "Port number of device"
                 }

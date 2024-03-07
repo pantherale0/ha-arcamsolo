@@ -5,7 +5,7 @@
     "config_flow": true,
     "documentation": "https://github.com/pantherale0/ha-arcamsolo",
     "integration_type": "hub",
-    "requirements": [ "pyarcamsolo==0.0.1" ],
+    "requirements": [ "pyarcamsolo==0.0.2" ],
     "dependencies": [],
     "codeowners": [ "@pantherale0" ],
     "iot_class": "local_push",

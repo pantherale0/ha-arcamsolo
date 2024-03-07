@@ -35,8 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         manufacturer="Arcam",
         name=entry.data[CONF_NAME],
         model="Solo",
-        sw_version=arcam.software_version,
-        configuration_url=f"ssh://{entry.data[CONF_HOST]}"
+        sw_version=arcam.software_version
     )
 
     # setup platforms
