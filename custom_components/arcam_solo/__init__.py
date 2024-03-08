@@ -29,15 +29,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryError(exc) from exc
     hass.data[DOMAIN][entry.entry_id] = arcam
 
-    device_registry.async_get(hass).async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, entry.unique_id)},
-        manufacturer="Arcam",
-        name=entry.data[CONF_NAME],
-        model="Solo",
-        sw_version=arcam.software_version
-    )
-
     # setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
