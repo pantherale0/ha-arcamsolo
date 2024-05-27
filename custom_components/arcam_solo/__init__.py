@@ -2,18 +2,19 @@
 from __future__ import annotations
 
 import logging
+from asyncio.exceptions import TimeoutError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform, CONF_HOST, CONF_PORT
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryError
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
 from pyarcamsolo import ArcamSolo
 
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER]
+PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER, Platform.REMOTE, Platform.NUMBER, Platform.BUTTON]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
@@ -24,6 +25,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     try:
         await arcam.connect()
+    except TimeoutError as exc:
+        raise ConfigEntryNotReady(exc) from exc
     except Exception as exc:
         raise ConfigEntryError(exc) from exc
     hass.data[DOMAIN][entry.entry_id] = arcam

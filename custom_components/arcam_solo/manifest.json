@@ -1,13 +1,20 @@
 {
-    "domain": "arcam_solo",
-    "name": "Arcam Solo",
-    "version": "0.0.0",
-    "config_flow": true,
-    "documentation": "https://github.com/pantherale0/ha-arcamsolo",
-    "integration_type": "hub",
-    "requirements": [ "pyarcamsolo==0.0.4" ],
-    "dependencies": [],
-    "codeowners": [ "@pantherale0" ],
-    "iot_class": "local_push",
-    "loggers": ["arcam_solo", "pyarcamsolo"]
-  }
+  "domain": "arcam_solo",
+  "name": "Arcam Solo",
+  "version": "0.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/pantherale0/ha-arcamsolo",
+  "integration_type": "hub",
+  "requirements": [
+    "pyarcamsolo==0.1.4"
+  ],
+  "dependencies": [],
+  "codeowners": [
+    "@pantherale0"
+  ],
+  "iot_class": "local_push",
+  "loggers": [
+    "arcam_solo",
+    "pyarcamsolo"
+  ]
+}

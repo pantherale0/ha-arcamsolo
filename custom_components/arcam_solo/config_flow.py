@@ -27,21 +27,22 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         _errors = {}
         if user_input is not None:
+            arcam = ArcamSolo(
+                host=user_input[CONF_HOST],
+                port=user_input[CONF_PORT]
+            )
             try:
-                arcam = ArcamSolo(
-                    host=user_input[CONF_HOST],
-                    port=user_input[CONF_PORT]
-                )
                 await arcam.connect()
-                await asyncio.sleep(4) # allow init queries to run
+                await asyncio.sleep(5) # allow init queries to run
                 await arcam.shutdown()
                 return self.async_create_entry(
                     title=user_input[CONF_NAME],
                     data=user_input
                 )
             except Exception as exc:
+                await arcam.shutdown()
                 _LOGGER.warning("Arcam Solo Error raised: %s", exc)
-                _errors["base"] = "unknown"
+                _errors["base"] = f"Unknown: {exc}"
 
         return self.async_show_form(
             step_id="user",
