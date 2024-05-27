@@ -17,18 +17,30 @@ _Integration to integrate with Arcam Solo Hi-Fi units_
 | Platform       | Description                                          |
 | -------------- | ---------------------------------------------------- |
 | `media_player` | Represents the master zone for the connected device. |
+| `button`       | A virtual button to eject the CD drive               |
+| `number`       | Creates entities to control balance, bass, treble and brightness. Radio frequency not yet supported fully. |
+| `remote`       | Creates a virtual remote to send IR commands to. For a list of supported commands, please see [pyarcamsolo](https://github.com/pantherale0/pyarcamsolo/blob/e56d677abb3c54f7dd629d2f14db088647c691ec/pyarcamsolo/commands.py#L149) |
 
 ## Installation
 
-1. The module this integration uses assumes you have created a serial to IP bridge to connect the RS232 port (using a null modem configuration) to your local network. If you haven't done this already, see the bottom of the readme for further guidance.
+1. The module this integration uses assumes you have created a serial to IP bridge to connect the RS232 port (using a null modem cable) to your local network. If you haven't done this already, please setup a ser2net bridge (or similar).
 1. Add repository to HACS as an integration
 1. Search and install "Arcam Solo"
 1. Restart Home Assistant
 1. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Arcam Solo"
 
-## Configuration is done in the UI
+## Helpful resources / notes
 
-<!---->
+- [ser2net setup](https://wifizoo.org/2023/05/12/yet-another-ser2net-tutorial/)
+
+The port speed of your amp may be different compared to what is in the manual, during testing I found that the RS232 protocol does not work reliably when the port speed is set to 9600, after a lot of trial and error I found port speed 38400 to work well. My ser2net settings are as follows:
+```
+connection: &con1096
+  accepter: tcp,SERVER_IP_HERE,2000
+  enable: on
+  connector: serialdev,/dev/ttyUSB0,38400n81,local
+```
+This configuration will create a TCP listener on your host available on port 2000 (replace SERVER_IP_HERE with the IP address of the machine hosting ser2net) for the serial device available at `/dev/ttyUSB0`.
 
 ## Contributions are welcome!
 
