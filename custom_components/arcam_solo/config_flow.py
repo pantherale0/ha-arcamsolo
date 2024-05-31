@@ -6,12 +6,12 @@ import logging
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME
+from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME, CONF_SCAN_INTERVAL
 from homeassistant.helpers import selector
 
 from pyarcamsolo import ArcamSolo
 
-from .const import DOMAIN
+from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,11 +32,11 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 port=user_input[CONF_PORT]
             )
             try:
-                await arcam.connect()
-                await asyncio.sleep(5) # allow init queries to run
-                await arcam.shutdown()
+                # await arcam.connect(reconnect=False)
+                # await asyncio.sleep(5) # allow init queries to run
+                # await arcam.shutdown()
                 return self.async_create_entry(
-                    title=user_input[CONF_NAME],
+                    title=f"{user_input[CONF_HOST]}:{int(user_input[CONF_PORT])}",
                     data=user_input
                 )
             except Exception as exc:
@@ -74,6 +74,25 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                             min=1000
                         )
                     ),
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL,
+                        default=(user_input or {}).get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            mode=selector.NumberSelectorMode.BOX,
+                            min=120
+                        )
+                    ),
+                    vol.Optional(
+                        CONF_ENABLED_FEATURES,
+                        default=(user_input or {}).get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES)
+                    ): selector.SelectSelector(
+                        selector.SelectSelectorConfig(
+                            options=DEFAULT_CONF_ENABLED_FEATURES,
+                            multiple=True,
+                            mode=selector.SelectSelectorMode.DROPDOWN
+                        )
+                    )
                 }
             ),
             errors=_errors

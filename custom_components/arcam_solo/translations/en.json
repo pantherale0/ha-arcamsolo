@@ -6,7 +6,9 @@
                 "data": {
                     "name": "Device name",
                     "host": "IP or hostname of device",
-                    "port": "Port number of device"
+                    "port": "Port number of device",
+                    "scan_interval": "Frequency to force refresh data (s)",
+                    "enabled_features": "Enabled integration features"
                 }
             }
         }

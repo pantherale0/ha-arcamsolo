@@ -47,6 +47,8 @@ class ArcamMediaEntity(ArcamSoloDevice, MediaPlayerEntity):
     """Represnetation of Arcam Solo media player entity."""
 
     _attr_device_class = MediaPlayerDeviceClass.SPEAKER
+    _attr_has_entity_name = True
+    _attr_name = None # https://developers.home-assistant.io/docs/core/entity#entity-naming
 
     # def __init__(
     #     self,
@@ -68,11 +70,6 @@ class ArcamMediaEntity(ArcamSoloDevice, MediaPlayerEntity):
     def unique_id(self) -> str:
         """Return the unique id."""
         return f"{self.config_entry.entry_id}-{self.zone}-media_player"
-
-    @property
-    def name(self) -> str:
-        """Return entity name."""
-        return self.config_entry.data[CONF_NAME]
 
     @property
     def state(self) -> MediaPlayerState:

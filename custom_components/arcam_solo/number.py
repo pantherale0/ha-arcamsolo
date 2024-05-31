@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.exceptions import ServiceValidationError
 from pyarcamsolo import ArcamSolo
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
 from .device import ArcamSoloDevice
 
 async def async_setup_entry(
@@ -21,54 +21,64 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Arcam Solo remote."""
     arcam = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
-        [
+    entities = []
+    if "sound_controls" in config_entry.data.get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES):
+        entities.extend([
+                ArcamFrequencyLevelEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1,
+                    level="Bass"
+                ),
+                ArcamFrequencyLevelEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1,
+                    level="Treble"
+                ),
+                ArcamFrequencyLevelEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1,
+                    level="Balance"
+                )
+            ]
+        )
+    if "display_controls" in config_entry.data.get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES):
+        entities.extend([
+                ArcamDisplayBrightnessEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1,
+                    key="standby_display_brightness",
+                    name="Standby Display Brightness",
+                    command="stby_display_brightness"
+                ),
+                ArcamDisplayBrightnessEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1,
+                    key="display_brightness",
+                    name="Display Brightness",
+                    command="display_brightness"
+                )
+            ]
+        )
+    if "radio_controls" in config_entry.data.get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES):
+        entities.append(
             ArcamNumberTunerEntity(
                 amp=arcam,
                 config_entry=config_entry,
                 zone=1 # multi-zone not supported yet
-            ),
-            ArcamFrequencyLevelEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1,
-                level="Bass"
-            ),
-            ArcamFrequencyLevelEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1,
-                level="Treble"
-            ),
-            ArcamFrequencyLevelEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1,
-                level="Balance"
-            ),
-            ArcamDisplayBrightnessEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1,
-                key="standby_display_brightness",
-                name="Standby Display Brightness",
-                command="stby_display_brightness"
-            ),
-            ArcamDisplayBrightnessEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1,
-                key="display_brightness",
-                name="Display Brightness",
-                command="display_brightness"
             )
-        ]
-    )
+        )
+    async_add_entities(entities)
 
 class ArcamFrequencyLevelEntity(ArcamSoloDevice, NumberEntity):
     """Number entity for bass level."""
 
     _attr_mode = "slider"
+    _attr_has_entity_name = True
 
     def __init__(self, amp: ArcamSolo, config_entry: ConfigEntry, zone: int, level: str) -> None:
         """Initialize the Arcam Solo."""
@@ -125,6 +135,8 @@ class ArcamFrequencyLevelEntity(ArcamSoloDevice, NumberEntity):
 
 class ArcamNumberTunerEntity(ArcamSoloDevice, NumberEntity):
     """Number entity for tuner frequency."""
+
+    _attr_has_entity_name = True
 
     @property
     def unique_id(self) -> str:
@@ -235,6 +247,7 @@ class ArcamDisplayBrightnessEntity(ArcamSoloDevice, NumberEntity):
 
     _attr_native_max_value = 4
     _attr_native_min_value = 0
+    _attr_has_entity_name = True
 
     def __init__(
             self,
@@ -262,6 +275,10 @@ class ArcamDisplayBrightnessEntity(ArcamSoloDevice, NumberEntity):
         if state is None:
             return False
         if "power" not in state:
+            return False
+        if state["power"] == "Standby" and self._key == "display_brightness":
+            return False
+        if state["power"] != "Standby" and self._key == "standby_display_brightness":
             return False
         return True
 

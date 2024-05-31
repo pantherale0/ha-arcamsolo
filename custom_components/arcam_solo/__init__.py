@@ -5,13 +5,13 @@ import logging
 from asyncio.exceptions import TimeoutError
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, CONF_HOST, CONF_PORT
+from homeassistant.const import Platform, CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
 from pyarcamsolo import ArcamSolo
 
-from .const import DOMAIN
+from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[Platform] = [Platform.MEDIA_PLAYER, Platform.REMOTE, Platform.NUMBER, Platform.BUTTON]
@@ -21,11 +21,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     arcam = ArcamSolo(
         host=entry.data[CONF_HOST],
-        port=entry.data[CONF_PORT]
+        port=entry.data[CONF_PORT],
+        scan_interval=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)
     )
     try:
         await arcam.connect()
     except TimeoutError as exc:
+        raise ConfigEntryNotReady(exc) from exc
+    except ConnectionRefusedError as exc:
+        raise ConfigEntryNotReady(exc) from exc
+    except ConnectionResetError as exc:
+        raise ConfigEntryNotReady(exc) from exc
+    except ConnectionAbortedError as exc:
+        raise ConfigEntryNotReady(exc) from exc
+    except ConnectionError as exc:
         raise ConfigEntryNotReady(exc) from exc
     except Exception as exc:
         raise ConfigEntryError(exc) from exc

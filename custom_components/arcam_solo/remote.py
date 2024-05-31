@@ -12,7 +12,7 @@ from homeassistant.const import STATE_UNKNOWN, CONF_NAME
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
 from .device import ArcamSoloDevice
 
 async def async_setup_entry(
@@ -22,18 +22,22 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Arcam Solo remote."""
     arcam = hass.data[DOMAIN][config_entry.entry_id]
-    async_add_entities(
-        [
-            ArcamRemoteEntity(
-                amp=arcam,
-                config_entry=config_entry,
-                zone=1 # multi-zone not supported yet
-            )
-        ]
-    )
+    if "virtual_remote" in config_entry.data.get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES):
+        async_add_entities(
+            [
+                ArcamRemoteEntity(
+                    amp=arcam,
+                    config_entry=config_entry,
+                    zone=1 # multi-zone not supported yet
+                )
+            ]
+        )
 
 class ArcamRemoteEntity(ArcamSoloDevice, RemoteEntity):
     """Represent Arcam Solo remote."""
+
+    _attr_has_entity_name = True
+    _attr_name = None
 
     @property
     def is_on(self) -> bool:
@@ -49,11 +53,6 @@ class ArcamRemoteEntity(ArcamSoloDevice, RemoteEntity):
     def unique_id(self) -> str:
         """Unique ID of the entity."""
         return f"{self.config_entry.entry_id}-{self.zone}-remote"
-
-    @property
-    def name(self) -> str:
-        """Return entity name."""
-        return self.config_entry.data[CONF_NAME]
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
