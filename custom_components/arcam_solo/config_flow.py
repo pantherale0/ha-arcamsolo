@@ -9,7 +9,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME, CONF_SCAN_INTERVAL
 from homeassistant.helpers import selector
 
-from pyarcamsolo import ArcamSolo
+from pyarcamsolo import ArcamSolo, CONF_USE_LOCAL_SERIAL
 
 from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
 
@@ -27,23 +27,10 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initialized by the user."""
         _errors = {}
         if user_input is not None:
-            arcam = ArcamSolo(
-                host=user_input[CONF_HOST],
-                port=user_input[CONF_PORT]
+            return self.async_create_entry(
+                title=f"{user_input[CONF_HOST]}:{int(user_input[CONF_PORT])}",
+                data=user_input
             )
-            try:
-                # await arcam.connect(reconnect=False)
-                # await asyncio.sleep(5) # allow init queries to run
-                # await arcam.shutdown()
-                return self.async_create_entry(
-                    title=f"{user_input[CONF_HOST]}:{int(user_input[CONF_PORT])}",
-                    data=user_input
-                )
-            except Exception as exc:
-                await arcam.shutdown()
-                _LOGGER.warning("Arcam Solo Error raised: %s", exc)
-                _errors["base"] = f"Unknown: {exc}"
-
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
@@ -74,6 +61,10 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                             min=1000
                         )
                     ),
+                    vol.Required(
+                        CONF_USE_LOCAL_SERIAL,
+                        default=(user_input or {}).get(CONF_USE_LOCAL_SERIAL, False)
+                    ): selector.BooleanSelector(),
                     vol.Optional(
                         CONF_SCAN_INTERVAL,
                         default=(user_input or {}).get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)

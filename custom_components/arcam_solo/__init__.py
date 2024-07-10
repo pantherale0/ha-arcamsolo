@@ -9,7 +9,7 @@ from homeassistant.const import Platform, CONF_HOST, CONF_PORT, CONF_SCAN_INTERV
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
-from pyarcamsolo import ArcamSolo
+from pyarcamsolo import ArcamSolo, CONF_USE_LOCAL_SERIAL
 
 from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL
 
@@ -22,7 +22,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     arcam = ArcamSolo(
         host=entry.data[CONF_HOST],
         port=entry.data[CONF_PORT],
-        scan_interval=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)
+        scan_interval=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL),
+        params={
+            CONF_USE_LOCAL_SERIAL: entry.data.get(CONF_USE_LOCAL_SERIAL, False)
+        }
     )
     try:
         await arcam.connect()
