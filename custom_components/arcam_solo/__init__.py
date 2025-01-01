@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from asyncio.exceptions import TimeoutError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform, CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
@@ -29,18 +28,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     try:
         await arcam.connect()
-    except TimeoutError as exc:
-        raise ConfigEntryNotReady(exc) from exc
-    except ConnectionRefusedError as exc:
-        raise ConfigEntryNotReady(exc) from exc
-    except ConnectionResetError as exc:
-        raise ConfigEntryNotReady(exc) from exc
-    except ConnectionAbortedError as exc:
-        raise ConfigEntryNotReady(exc) from exc
-    except ConnectionError as exc:
-        raise ConfigEntryNotReady(exc) from exc
+    except (
+        TimeoutError,
+        ConnectionAbortedError,
+        ConnectionRefusedError,
+        ConnectionResetError,
+        RuntimeError,
+        OSError
+    ) as exc:
+        if arcam:
+            await arcam.shutdown()
+            del arcam
+        raise ConfigEntryNotReady from exc
     except Exception as exc:
-        raise ConfigEntryError(exc) from exc
+        raise ConfigEntryError from exc
     hass.data[DOMAIN][entry.entry_id] = arcam
 
     # setup platforms
