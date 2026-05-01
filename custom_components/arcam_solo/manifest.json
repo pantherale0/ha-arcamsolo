@@ -10,12 +10,11 @@
   "integration_type": "device",
   "iot_class": "local_push",
   "loggers": [
-    "arcam_solo",
     "pyarcamsolo"
   ],
   "issue_tracker": "https://github.com/pantherale0/ha-arcamsolo/issues",
   "requirements": [
-    "pyarcamsolo==0.2.1"
+    "pyarcamsolo==1.0.0"
   ],
   "version": "0.0.0"
 }

@@ -1,24 +1,21 @@
 """Config flow for Arcam Solo."""
 from __future__ import annotations
 
-import asyncio
 import logging
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_PORT, CONF_NAME, CONF_SCAN_INTERVAL
+from homeassistant.const import CONF_DEVICE, CONF_NAME
 from homeassistant.helpers import selector
 
-from pyarcamsolo import ArcamSolo, CONF_USE_LOCAL_SERIAL
-
-from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
+from .const import DOMAIN, CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES
 
 _LOGGER = logging.getLogger(__name__)
 
 class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Config flow for Arcam Solo."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(
             self,
@@ -28,7 +25,7 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             return self.async_create_entry(
-                title=f"{user_input[CONF_HOST]}:{int(user_input[CONF_PORT])}",
+                title=f"{user_input[CONF_NAME]}",
                 data=user_input
             )
         return self.async_show_form(
@@ -44,36 +41,9 @@ class ArcamSoloFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                         )
                     ),
                     vol.Required(
-                        CONF_HOST,
-                        default=(user_input or {}).get(CONF_HOST)
-                    ): selector.TextSelector(
-                        selector.TextSelectorConfig(
-                            type=selector.TextSelectorType.TEXT
-                        )
-                    ),
-                    vol.Required(
-                        CONF_PORT,
-                        default=(user_input or {}).get(CONF_PORT)
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            mode=selector.NumberSelectorMode.BOX,
-                            max=65535,
-                            min=1000
-                        )
-                    ),
-                    vol.Required(
-                        CONF_USE_LOCAL_SERIAL,
-                        default=(user_input or {}).get(CONF_USE_LOCAL_SERIAL, False)
-                    ): selector.BooleanSelector(),
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL,
-                        default=(user_input or {}).get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)
-                    ): selector.NumberSelector(
-                        selector.NumberSelectorConfig(
-                            mode=selector.NumberSelectorMode.BOX,
-                            min=120
-                        )
-                    ),
+                        CONF_DEVICE,
+                        default=(user_input or {}).get(CONF_DEVICE)
+                    ): selector.SerialPortSelector(),
                     vol.Optional(
                         CONF_ENABLED_FEATURES,
                         default=(user_input or {}).get(CONF_ENABLED_FEATURES, DEFAULT_CONF_ENABLED_FEATURES)

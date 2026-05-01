@@ -4,11 +4,11 @@ from __future__ import annotations
 import logging
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
+from homeassistant.const import Platform, CONF_DEVICE, CONF_HOST, CONF_PORT, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
-from pyarcamsolo import ArcamSolo, CONF_USE_LOCAL_SERIAL
+from pyarcamsolo import ArcamSolo
 
 from .const import DOMAIN, DEFAULT_CONF_SCAN_INTERVAL
 
@@ -19,12 +19,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up this integration using UI."""
     hass.data.setdefault(DOMAIN, {})
     arcam = ArcamSolo(
-        host=entry.data[CONF_HOST],
-        port=entry.data[CONF_PORT],
-        scan_interval=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL),
-        params={
-            CONF_USE_LOCAL_SERIAL: entry.data.get(CONF_USE_LOCAL_SERIAL, False)
-        }
+        uri=entry.data[CONF_DEVICE],
+        scan_interval=entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_CONF_SCAN_INTERVAL)
     )
     try:
         await arcam.connect()
@@ -59,3 +55,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         _LOGGER.warning("unload_entry failed.")
     return unload_ok
+
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Migrate config entry to latest version."""
+    if entry.version == 1:
+        # Uses old aiotelnet library, now replaced with serialx
+        hass.config_entries.async_update_entry(
+            entry,
+            data={
+                **entry.data,
+                CONF_DEVICE: f"socket://{entry.data[CONF_HOST]}:{int(entry.data[CONF_PORT])}"
+            },
+            version=2
+        )
+        return True
+    return False
