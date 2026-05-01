@@ -14,7 +14,7 @@
   ],
   "issue_tracker": "https://github.com/pantherale0/ha-arcamsolo/issues",
   "requirements": [
-    "pyarcamsolo==1.0.0"
+    "pyarcamsolo==1.0.1"
   ],
   "version": "0.0.0"
 }
