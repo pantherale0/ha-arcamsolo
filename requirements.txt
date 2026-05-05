@@ -1,5 +1,5 @@
 colorlog==6.8.2
 homeassistant==2026.5.0b0
-pip>=26.1
+pip>=26.1.1
 ruff==0.4.5
 pyarcamsolo==1.0.1
