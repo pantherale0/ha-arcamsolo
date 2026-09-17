@@ -34,7 +34,7 @@ class ArcamSoloDevice(Entity):
     def device_info(self) -> DeviceInfo:
         """Return information about the device."""
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{self.config_entry.data[CONF_HOST]}:{self.config_entry.data[CONF_PORT]}")},
+            identifiers={(DOMAIN, self.config_entry.entry_id)},
             name=self.config_entry.data[CONF_NAME],
             model="Solo",
             sw_version=self.amp.software_version,
